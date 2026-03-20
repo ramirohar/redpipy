@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "redpypi"
+name = "redpipy"
 authors = [
     {name="Hernan E. Grecco", email="hernan.grecco@gmail.com"},
     {name="Tomas Di Napoli", email="tomas.dina98@gmail.com"},

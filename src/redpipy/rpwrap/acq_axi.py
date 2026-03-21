@@ -1,15 +1,16 @@
 """
-    redpipy.acq_axi
-    ~~~~~~~~~~~~~~~
+redpipy.acq_axi
+~~~~~~~~~~~~~~~
 
-    Pythonic wrapper for the rp package.
+Pythonic wrapper for the rp package.
 
-    original file: rp_acq_axi.h
-    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+original file: rp_acq_axi.h
+commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -321,11 +322,9 @@ def get_datav_np(
 
     """
 
-    buffer = np.empty(size)
+    buffer = np.empty(size, dtype=np.float32)
 
-    __status_code, __size, __buffer = rp.rp_AcqAxiGetDataVNP(
-        channel.value, pos, size, buffer
-    )
+    __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(

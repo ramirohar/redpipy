@@ -302,7 +302,10 @@ def get_datav(
 
 
 def get_datav_np(
-    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel,
+    pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    out: npt.NDArray | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -322,7 +325,14 @@ def get_datav_np(
 
     """
 
-    buffer = np.empty(size, dtype=np.float32)
+    if out is None:
+        buffer = np.empty(size, dtype=np.float32)
+    else:
+        if out.size > constants.ADC_BUFFER_SIZE:
+            raise ValueError(
+                f"Output buffer size {out.size} is greater than ADC buffer size {constants.ADC_BUFFER_SIZE}"
+            )
+        buffer = out
 
     __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, buffer)
 

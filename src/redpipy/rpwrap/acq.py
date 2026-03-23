@@ -1,20 +1,21 @@
 """
-    redpipy.acq
-    ~~~~~~~~~~~
+redpipy.acq
+~~~~~~~~~~~
 
-    Pythonic wrapper for the rp package.
+Pythonic wrapper for the rp package.
 
-    Skipped functions
-    -----------------
-    - rp_createBuffer
-    - rp_deleteBuffer
+Skipped functions
+-----------------
+- rp_createBuffer
+- rp_deleteBuffer
 
-    original file: rp_acq.h
-    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+original file: rp_acq.h
+commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -1112,7 +1113,9 @@ def get_oldest_datav(
 
 
 def get_oldest_datav_np(
-    channel: constants.Channel, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel,
+    size: int = constants.ADC_BUFFER_SIZE,
+    out: npt.NDArray | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from the oldest sample to the
     newest one. Output buffer must be at least 'size' long. CAUTION: Use
@@ -1132,7 +1135,14 @@ def get_oldest_datav_np(
 
     """
 
-    buffer = np.empty(size, dtype=np.float32)
+    if out is None:
+        buffer = np.empty(size, dtype=np.float32)
+    else:
+        if out.size > constants.ADC_BUFFER_SIZE:
+            raise ValueError(
+                f"Output buffer size {out.size} is greater than ADC buffer size {constants.ADC_BUFFER_SIZE}"
+            )
+        buffer = out
 
     __status_code, __size, __buffer = rp.rp_AcqGetOldestDataVNP(channel.value, buffer)
 

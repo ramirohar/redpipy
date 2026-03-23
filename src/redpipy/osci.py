@@ -81,10 +81,10 @@ class Channel:
         self.enabled = False
 
     def get_trace(
-        self, size: int = constants.ADC_BUFFER_SIZE
+        self, size: int = constants.ADC_BUFFER_SIZE, out: npt.NDArray | None = None
     ) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
-        return acq.get_oldest_datav_np(self.channel, size=size)
+        return acq.get_oldest_datav_np(self.channel, size=size, out=out)
 
     def get_trace_raw(
         self, size: int = constants.ADC_BUFFER_SIZE
@@ -178,7 +178,7 @@ class Oscilloscope(RPBoard):
             if self.channel1.enabled:
                 out["ch1"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
             if self.channel2.enabled:
-                out["ch2"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
+                out["ch2"] = self.channel2.get_trace_raw(size=self._amount_datapoints)
         else:
             out: dict[str, npt.NDArray[Any]] = dict(
                 time=self.get_timevector(size=self._amount_datapoints)
@@ -186,7 +186,7 @@ class Oscilloscope(RPBoard):
             if self.channel1.enabled:
                 out["ch1"] = self.channel1.get_trace(size=self._amount_datapoints)
             if self.channel2.enabled:
-                out["ch2"] = self.channel1.get_trace(size=self._amount_datapoints)
+                out["ch2"] = self.channel2.get_trace(size=self._amount_datapoints)
 
         df = pd.DataFrame(out)
         df.attrs["timestamp"] = timestamp
@@ -194,6 +194,19 @@ class Oscilloscope(RPBoard):
             df.attrs[k] = v
 
         return df
+
+    def get_voltage_numpy(
+        self, channel: Literal["ch1", "ch2"], out: np.ndarray | None = None
+    ) -> np.ndarray:
+        if channel == "ch1":
+            voltage = self.channel1.get_trace(size=self._amount_datapoints, out=out)
+        elif channel == "ch2":
+            voltage = self.channel2.get_trace(size=self._amount_datapoints, out=out)
+        else:
+            raise ValueError(
+                f"{channel} is not a valid value, channel must be either 'ch1' or 'ch2'"
+            )
+        return voltage
 
     def configure_trigger(
         self,

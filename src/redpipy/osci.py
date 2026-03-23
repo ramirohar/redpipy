@@ -42,7 +42,7 @@ def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
             return getattr(constants.Decimation, "DEC_{:d}".format(decimation))
 
     raise ValueError(
-        "Could not find suitable decimation value " "for {trace_duration} seconds."
+        "Could not find suitable decimation value for {trace_duration} seconds."
     )
 
 
@@ -161,7 +161,7 @@ class Oscilloscope(RPBoard):
 
     def get_timevector(
         self, size: int = constants.ADC_BUFFER_SIZE
-    ) -> npt.NDArray[np.float32]:
+    ) -> npt.NDArray[np.float64]:
         """Get timevector (in seconds)."""
         # TODO: update docs to take into account new parameter
         return self.get_timevector_raw(size=size) / acq.get_sampling_rate_hz()
@@ -240,6 +240,10 @@ class Oscilloscope(RPBoard):
             Duration of the trace to be measured (in seconds).
         full_buffer
             The full RP buffer size is returned, by default False.
+
+        Returns
+        ---------
+        trace duration
         """
         acq.set_decimation(calculate_best_decimation(trace_duration_hint))
 
@@ -255,7 +259,7 @@ class Oscilloscope(RPBoard):
 
         return trace_duration
 
-    def set_decimation(self, decimation_exponent: common.DECIMATION_EXPONENTS) -> int:
+    def set_decimation(self, decimation_exponent: common.DECIMATION_EXPONENTS) -> float:
         """Configure the timebase by providing a decimation.
 
         Sets the sampling rate of the oscilloscope by providing the decimation.
@@ -266,6 +270,10 @@ class Oscilloscope(RPBoard):
         ----------
         decimation_exponent
             Decimation exponent to calculate the decimation of the sampling rate.
+
+        Returns
+        ---------
+        trace duration
         """
 
         acq.set_decimation(

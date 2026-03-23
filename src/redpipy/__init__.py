@@ -1,16 +1,18 @@
 """
-    redpipy
-    ~~~~~~~
+redpipy
+~~~~~~~
 
-    A Python and Pythonic package to control RedPitaya's Hardware.
+A Python and Pythonic package to control RedPitaya's Hardware.
 
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
+
 from __future__ import annotations
 
 from .digital import RPDI, RPDO
 from .osci import Oscilloscope
+from .osci_axi import AxiOscilloscope
 
-__all__ = ["Oscilloscope", "RPDI", "RPDO"]
+__all__ = ["Oscilloscope", "AxiOscilloscope", "RPDI", "RPDO"]

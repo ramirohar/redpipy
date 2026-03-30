@@ -58,7 +58,7 @@ def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float)
         RP's sampling rate.
     """
     amount_datapoints = math.ceil(min_trace_duration * sampling_rate)
-    assert 0 < amount_datapoints <= constants.ADC_BUFFER_SIZE
+    assert 0 < amount_datapoints <= constants.DMA_SIZE_SAMPLES
     return amount_datapoints
 
 
@@ -81,14 +81,20 @@ class AxiChannel:
         self.enabled = False
 
     def get_trace(
-        self, delay_samples: int, size: int = constants.DMA_SIZE_SAMPLES
+        self,
+        delay_samples: int,
+        size: int = constants.DMA_SIZE_SAMPLES,
+        out: npt.NDArray | None = None,
     ) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
-        pointer = acq_axi.get_write_pointer_at_trig(self.channel) + delay_samples
-        return acq_axi.get_datav_np(self.channel, pointer, size=size)
+        # TODO: This works for full buffer, but I think I have to change it
+        # when I want less than that
+        pointer_at_trig = acq_axi.get_write_pointer_at_trig(self.channel)
+        data_pointer = pointer_at_trig + delay_samples
+        return acq_axi.get_datav_np(self.channel, data_pointer, size=size, out=out)
 
     def get_trace_raw(
-        self, delay_samples: int, size: int = constants.ADC_BUFFER_SIZE
+        self, delay_samples: int, size: int = constants.DMA_SIZE_SAMPLES
     ) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
         pointer = acq_axi.get_write_pointer_at_trig(self.channel) + delay_samples
@@ -114,35 +120,44 @@ class AxiChannel:
 class AxiOscilloscope(RPBoard):
     """Oscilloscope"""
 
-    def __init__(self) -> None:
+    def __init__(
+        self, channel_config: constants.ChannelConfig = constants.ChannelConfig.CH1_ONLY
+    ) -> None:
         super().__init__()
+        self._memory_start, self._memory_size = acq_axi.get_memory_region()
+        self.configure_memory(channel_config)
         self.channel1 = AxiChannel(1)
         self.channel2 = AxiChannel(2)
         self._channel_config = self.get_channel_config()
-        self._memory_start, self._memory_size = acq_axi.get_memory_region()
         self.configure_trigger()
         self.set_timebase(1)
         self.set_trigger_delay(self.channel1, 1)
         self.set_trigger_delay(self.channel2, 1)
         self._wait_after_trigger = 0
 
-    def configure_memory(self, channel_config: constants.ChannelConfig):
-        if channel_config == self._channel_config:
-            return
+    def configure_memory(self, channel_config: constants.ChannelConfig | None = None):
+        if channel_config is None:
+            channel_config = self.get_channel_config()
 
         assert (self._memory_size % 16) == 0
+        size_samples = self._memory_size // 4
         # The data is saved in 32-bit chunks (4 Bytes per sample)
         if channel_config == constants.ChannelConfig.CH1_ONLY:
             acq_axi.set_buffer_samples(
-                self.channel1.channel, self._memory_start, self._memory_size
+                constants.Channel.CH_1, self._memory_start, size_samples
             )
         elif channel_config == constants.ChannelConfig.CH2_ONLY:
             acq_axi.set_buffer_samples(
-                self.channel2.channel, self._memory_start, self._memory_size
+                constants.Channel.CH_2, self._memory_start, size_samples
             )
         elif channel_config == constants.ChannelConfig.BOTH_CH:
             acq_axi.set_buffer_samples(
-                self.channel1.channel, self._memory_start, self._memory_size // 2
+                constants.Channel.CH_1, self._memory_start, size_samples // 2
+            )
+            acq_axi.set_buffer_samples(
+                constants.Channel.CH_2,
+                self._memory_start + self._memory_size // 2,
+                size_samples // 2,
             )
 
     def get_channel_config(self) -> constants.ChannelConfig:
@@ -163,19 +178,13 @@ class AxiOscilloscope(RPBoard):
 
     def get_timebase_settings(self) -> dict[str, Any]:
         """Get timebase settings."""
-        trigger_delay_ch1 = (
-            acq_axi.get_trigger_delay(self.channel1.channel)
-            + constants.ADC_BUFFER_SIZE / 2
-        )
-        trigger_delay_ch2 = (
-            acq_axi.get_trigger_delay(self.channel2.channel)
-            + constants.ADC_BUFFER_SIZE / 2
-        )
+        trigger_delay_ch1 = acq_axi.get_trigger_delay(self.channel1.channel)
+        trigger_delay_ch2 = acq_axi.get_trigger_delay(self.channel2.channel)
         sampling_rate = acq.get_sampling_rate_hz()
         return dict(
             decimation=acq_axi.get_decimation_factor(),
             sampling_rate=sampling_rate,
-            trace_duration=constants.ADC_BUFFER_SIZE / sampling_rate,
+            trace_duration=self._amount_datapoints / sampling_rate,
             trigger_delay_ch1=trigger_delay_ch1 / sampling_rate,
             trigger_delay_ch1_samples=trigger_delay_ch1,
             trigger_delay_ch2=trigger_delay_ch2 / sampling_rate,
@@ -204,17 +213,17 @@ class AxiOscilloscope(RPBoard):
         )
 
     def get_timevector_raw(
-        self, size: int = constants.ADC_BUFFER_SIZE
+        self, size: int = constants.DMA_SIZE_SAMPLES
     ) -> npt.NDArray[np.int64]:
         """Get timevector (in samples)."""
         return (
-            np.arange(size, dtype=np.int64)  # type: ignore
-            + acq.get_trigger_delay()
-            - constants.ADC_BUFFER_SIZE // 2
+            np.arange(
+                size, dtype=np.int64
+            )  # TODO: maybe I have to change this to account for t=0
         )
 
     def get_timevector(
-        self, size: int = constants.ADC_BUFFER_SIZE
+        self, size: int = constants.DMA_SIZE_SAMPLES
     ) -> npt.NDArray[np.float64]:
         """Get timevector (in seconds)."""
         # TODO: update docs to take into account new parameter
@@ -225,7 +234,7 @@ class AxiOscilloscope(RPBoard):
         # TODO: update docs to take into account new parameter
         timestamp = datetime.now(tz=timezone.utc).isoformat()
 
-        timebase_settings = self.get_trigger_settings()
+        timebase_settings = self.get_timebase_settings()
         delay_samples_ch1 = timebase_settings["trigger_delay_ch1_samples"]
         delay_samples_ch2 = timebase_settings["trigger_delay_ch2_samples"]
 
@@ -307,9 +316,8 @@ class AxiOscilloscope(RPBoard):
         full_buffer
             The full RP buffer size is returned, by default False.
         """
-        acq_axi.set_decimation_factor(
-            calculate_best_decimation_axi(trace_duration_hint)
-        )
+        best_decimation = calculate_best_decimation_axi(trace_duration_hint)
+        acq_axi.set_decimation_factor(best_decimation)
 
         sampling_rate = acq.get_sampling_rate_hz()
         if full_buffer:
@@ -346,8 +354,31 @@ class AxiOscilloscope(RPBoard):
             ]
         )
         sampling_rate = acq.get_sampling_rate_hz()
-        self._amount_datapoints = constants.ADC_BUFFER_SIZE
+        self._amount_datapoints = constants.DMA_SIZE_SAMPLES
         return self._amount_datapoints / sampling_rate
+
+    def get_voltage_numpy(
+        self,
+        channel: Literal["ch1", "ch2"],
+        out: np.ndarray | None = None,
+        delay_samples: int | None = None,
+    ) -> np.ndarray:
+        if delay_samples is None:
+            timebase_settings = self.get_timebase_settings()
+            delay_samples = timebase_settings[f"trigger_delay_{channel}_samples"]
+        if channel == "ch1":
+            voltage = self.channel1.get_trace(
+                delay_samples=delay_samples, size=self._amount_datapoints, out=out
+            )
+        elif channel == "ch2":
+            voltage = self.channel2.get_trace(
+                delay_samples=delay_samples, size=self._amount_datapoints, out=out
+            )
+        else:
+            raise ValueError(
+                f"{channel} is not a valid value, channel must be either 'ch1' or 'ch2'"
+            )
+        return voltage
 
     def set_trigger_delay(
         self,
@@ -392,17 +423,17 @@ class AxiOscilloscope(RPBoard):
         acq_axi.set_trigger_delay(channel.channel, int(delay_samples))
         return delay_samples
 
-    def wait_until_done(self):
+    def wait_until_done(self, channel: AxiChannel):
         """Wait until the triggering condition has been met."""
         trace_duration = self._amount_datapoints / acq.get_sampling_rate_hz()
         sleep_duration = max(trace_duration / 1000, 100e-6)
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
 
-        while not acq.get_buffer_fill_state():
+        while not acq_axi.get_buffer_fill_state(channel.channel):
             time.sleep(sleep_duration)
 
-    def arm_trigger(self, wait: bool = True) -> None:
+    def arm_trigger(self, channel: AxiChannel, wait: bool = True) -> None:
         """Arm the trigger.
 
         If wait is True (default), the thread will lock until the acquisition
@@ -412,9 +443,9 @@ class AxiOscilloscope(RPBoard):
         acq.start()
         acq.set_trigger_src(self._trigger_src)
         if wait:
-            self.wait_until_done()
+            self.wait_until_done(channel)
 
-    def trigger_now(self, wait: bool = True):
+    def trigger_now(self, channel: AxiChannel, wait: bool = True):
         """Trigger now.
 
         If wait is True (default), the thread will lock until the acquisition
@@ -424,4 +455,4 @@ class AxiOscilloscope(RPBoard):
         acq.start()
         acq.set_trigger_src(constants.AcqTriggerSource.NOW)
         if wait:
-            self.wait_until_done()
+            self.wait_until_done(channel)

@@ -328,7 +328,7 @@ def get_datav_np(
     if out is None:
         buffer = np.empty(size, dtype=np.float32)
     else:
-        if out.size > constants.ADC_BUFFER_SIZE:
+        if out.size > constants.DMA_SIZE_SAMPLES:
             raise ValueError(
                 f"Output buffer size {out.size} is greater than ADC buffer size {constants.ADC_BUFFER_SIZE}"
             )

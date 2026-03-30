@@ -1144,7 +1144,7 @@ def get_oldest_datav_np(
             )
         buffer = out
 
-    __status_code, __size, __buffer = rp.rp_AcqGetOldestDataVNP(channel.value, buffer)
+    __status_code = rp.rp_AcqGetOldestDataVNP(channel.value, buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(

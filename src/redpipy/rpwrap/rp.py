@@ -1,27 +1,40 @@
 """
-    redpipy.rp
-    ~~~~~~~~~~
+redpipy.rp
+~~~~~~~~~~
 
-    Pythonic wrapper for the rp package.
+Pythonic wrapper for the rp package.
 
-    original file: rp.h
-    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+original file: rp.h
+commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
-from __future__ import annotations
-
-import rp
 
 from . import constants
 from .constants import StatusCode
 from .error import RPPError
 
+import numpy as np
 
-def _to_debug(*values):
+import rp
+import numpy.typing as npt
+
+
+def _to_debug(values=tuple()):
     VALID = (int, float, str, bool)
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
+
+
+def init_adresses() -> None:
+    """ """
+
+    __status_code = rp.rp_InitAdresses()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_InitAdresses", _to_debug(), __status_code)
+
+    return
 
 
 def init() -> None:
@@ -106,6 +119,61 @@ def get_error(error_code: int) -> str:
     return __value
 
 
+def print_house_regset() -> None:
+    """Prints a set of registers for Housekeeping."""
+
+    __status_code = rp.rp_PrintHouseRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintHouseRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_osc_regset() -> None:
+    """Prints a set of registers for Oscilloscope."""
+
+    __status_code = rp.rp_PrintOscRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintOscRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_asg_regset() -> None:
+    """Prints a set of registers for Arbitrary Signal Generator."""
+
+    __status_code = rp.rp_PrintAsgRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintAsgRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_ams_regset() -> None:
+    """Prints a set of registers for Analog Mixed Signals (AMS)."""
+
+    __status_code = rp.rp_PrintAmsRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintAmsRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_daisy_regset() -> None:
+    """Prints a set of registers for Daisy Chain."""
+
+    __status_code = rp.rp_PrintDaisyRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintDaisyRegset", _to_debug(), __status_code)
+
+    return
+
+
 def enable_digital_loop(enable: bool) -> None:
     """Enable or disables digital loop. This internally connect output to
     input
@@ -168,6 +236,17 @@ def led_get_state() -> int:
         raise RPPError("rp_LEDGetState", _to_debug(), __status_code)
 
     return __state
+
+
+def get_freq_counter() -> int:
+    """ """
+
+    __status_code, __value = rp.rp_GetFreqCounter()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetFreqCounter", _to_debug(), __status_code)
+
+    return __value
 
 
 def gpio_n_set_direction(direction: int) -> None:
@@ -893,3 +972,39 @@ def get_pll_control_locked() -> bool:
         raise RPPError("rp_GetPllControlLocked", _to_debug(), __status_code)
 
     return __status
+
+
+def set_external_trigger_level(value: float) -> None:
+    """Only works with Redpitaya 250-12 otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    value
+        Trigger level. Positive value.
+
+    """
+
+    __status_code = rp.rp_SetExternalTriggerLevel(value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetExternalTriggerLevel", _to_debug(value), __status_code)
+
+    return
+
+
+def get_external_trigger_level() -> float:
+    """Only works with Redpitaya 250-12 otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    value
+        Returns the trigger level.
+
+    """
+
+    __status_code, __value = rp.rp_GetExternalTriggerLevel()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetExternalTriggerLevel", _to_debug(), __status_code)
+
+    return __value

@@ -1,27 +1,27 @@
 """
-    redpipy.gen
-    ~~~~~~~~~~~
+redpipy.gen
+~~~~~~~~~~~
 
-    Pythonic wrapper for the rp package.
+Pythonic wrapper for the rp package.
 
-    original file: rp_gen.h
-    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+original file: rp_gen.h
+commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
-from __future__ import annotations
-
-import numpy as np
-import rp
-from numpy import typing as npt
 
 from . import constants
 from .constants import StatusCode
 from .error import RPPError
 
+import numpy as np
 
-def _to_debug(*values):
+import rp
+import numpy.typing as npt
+
+
+def _to_debug(values=tuple()):
     VALID = (int, float, str, bool)
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
 
@@ -102,6 +102,28 @@ def out_is_enabled(channel: constants.Channel) -> bool:
         raise RPPError("rp_GenOutIsEnabled", _to_debug(channel.value), __status_code)
 
     return __value
+
+
+def set_amplitude_and_offset_origin(channel: constants.Channel) -> None:
+    """Sets the amplitude multiplier to 1 and the offset to 0, taking into
+    account the calibration. This is necessary so that the signal from the
+    buffer is fed to the generator without changes.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for witch we want to set amplitude
+
+    """
+
+    __status_code = rp.rp_GenSetAmplitudeAndOffsetOrigin(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenSetAmplitudeAndOffsetOrigin", _to_debug(channel.value), __status_code
+        )
+
+    return
 
 
 def amp(channel: constants.Channel, amplitude: float) -> None:
@@ -507,9 +529,7 @@ def get_sweep_dir(channel: constants.Channel) -> constants.GenSweepDirection:
     return constants.GenSweepDirection(__mode)
 
 
-def arb_waveform(
-    channel: constants.Channel, waveform: npt.NDArray[np.float32]
-) -> float:
+def arb_waveform(channel: constants.Channel, size: int) -> float:
     """Sets user defined waveform.
 
     Parameters
@@ -518,31 +538,51 @@ def arb_waveform(
         Channel A or B for witch we want to set waveform.
     waveform
         Use defined wave form, where min is -1V an max is 1V.
-    length
+    size
         Length of waveform.
 
     """
 
-    waveform_buffer = rp.fBuffer(waveform.size)
-    for ndx in range(waveform.size):
-        waveform_buffer[ndx] = waveform[ndx]
-
-    __status_code, __waveform = rp.rp_GenArbWaveform(
-        channel.value, waveform_buffer, waveform.size
-    )
+    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, size)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveform",
-            _to_debug(channel.value, "waveform_buffer", waveform.size),
-            __status_code,
+            "rp_GenArbWaveform", _to_debug(channel.value, size), __status_code
         )
 
     return __waveform
 
 
+def arb_waveform_np(channel: constants.Channel, size: int) -> float:
+    """Sets user defined waveform.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for witch we want to set waveform.
+    size
+        Length of waveform.
+
+
+    C Parameters
+    ------------
+    waveform
+        Use defined wave form, where min is -1V an max is 1V.
+
+    """
+
+    __status_code, __np_buffer = rp.rp_GenArbWaveformNP(channel.value, size)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenArbWaveformNP", _to_debug(channel.value, size), __status_code
+        )
+
+    return __np_buffer
+
+
 def get_arb_waveform(
-    channel: constants.Channel, waveform: float, length: int
+    channel: constants.Channel, waveform: float, size: int, size_out: int
 ) -> tuple[float, int]:
     """Gets user defined waveform.
 
@@ -552,23 +592,61 @@ def get_arb_waveform(
         Channel A or B for witch we want to get waveform.
     waveform
         Pointer where waveform will be returned.
-    length
-        Pointer where waveform length will be returned.
+    size
+        Size of the input array.
+    size_out
+        Returns the size of the signal
 
     """
 
-    __status_code, __waveform, __length = rp.rp_GenGetArbWaveform(
-        channel.value, waveform, length
+    __status_code, __waveform, __size_out = rp.rp_GenGetArbWaveform(
+        channel.value, waveform, size, size_out
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_GenGetArbWaveform",
-            _to_debug(channel.value, waveform, length),
+            _to_debug(channel.value, waveform, size, size_out),
             __status_code,
         )
 
-    return __waveform, __length
+    return __waveform, __size_out
+
+
+def get_arb_waveform_np(
+    channel: constants.Channel, np_buffer: float, size: int, size_out: int
+) -> tuple[float, int]:
+    """Gets user defined waveform.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for witch we want to get waveform.
+    size
+        Size of the input array.
+    size_out
+        Returns the size of the signal
+
+
+    C Parameters
+    ------------
+    waveform
+        Pointer where waveform will be returned.
+
+    """
+
+    __status_code, __np_buffer, __size_out = rp.rp_GenGetArbWaveformNP(
+        channel.value, np_buffer, size, size_out
+    )
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenGetArbWaveformNP",
+            _to_debug(channel.value, np_buffer, size, size_out),
+            __status_code,
+        )
+
+    return __np_buffer, __size_out
 
 
 def duty_cycle(channel: constants.Channel, ratio: float) -> None:
@@ -741,6 +819,61 @@ def get_burst_count(channel: constants.Channel) -> int:
         raise RPPError("rp_GenGetBurstCount", _to_debug(channel.value), __status_code)
 
     return __num
+
+
+def set_use_last_sample(channel: constants.Channel, enable: bool) -> None:
+    """Enables or disables the use of the last sample value for signal
+    generation. When enabled, the generator will use the last generated
+    sample value as the initial value for the next waveform cycle or
+    burst. This is useful for maintaining phase continuity between
+    consecutive waveforms or for creating seamless transitions in
+    arbitrary waveforms.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which to configure the last sample usage.
+    enable
+        Boolean value to enable (true) or disable (false) the use of last
+        sample.
+
+    """
+
+    __status_code = rp.rp_GenSetUseLastSample(channel.value, enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenSetUseLastSample", _to_debug(channel.value, enable), __status_code
+        )
+
+    return
+
+
+def get_use_last_sample(channel: constants.Channel) -> bool:
+    """Retrieves the current setting for using the last sample value in
+    signal generation. This function returns whether the generator is
+    configured to use the last generated sample value as the starting
+    point for subsequent waveform cycles.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which to get the last sample usage setting.
+    enable
+        Pointer to a boolean variable where the current setting will be
+        stored. The value will be true if last sample usage is enabled,
+        false if disabled.
+
+    """
+
+    __status_code, __enable = rp.rp_GenGetUseLastSample(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenGetUseLastSample", _to_debug(channel.value), __status_code
+        )
+
+    return __enable
 
 
 def burst_last_value(channel: constants.Channel, amplitude: float) -> None:
@@ -1014,6 +1147,17 @@ def trigger_only(channel: constants.Channel) -> None:
     return
 
 
+def trigger_only_both() -> None:
+    """ """
+
+    __status_code = rp.rp_GenTriggerOnlyBoth()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GenTriggerOnlyBoth", _to_debug(), __status_code)
+
+    return
+
+
 def reset_channel_sm(channel: constants.Channel) -> None:
     """Reset the state machine for the selected channel.
 
@@ -1178,17 +1322,17 @@ def get_gain_out(channel: constants.Channel) -> constants.GenGain:
     ----------
     channel
         Channel A or B.
-    status
-        Set current state.
+    mode
+        Get current state.
 
     """
 
-    __status_code, __status = rp.rp_GenGetGainOut(channel.value)
+    __status_code, __mode = rp.rp_GenGetGainOut(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_GenGetGainOut", _to_debug(channel.value), __status_code)
 
-    return constants.GenGain(__status)
+    return constants.GenGain(__mode)
 
 
 def set_ext_trigger_debouncer_us(value: float) -> None:
@@ -1198,7 +1342,7 @@ def set_ext_trigger_debouncer_us(value: float) -> None:
     Parameters
     ----------
     value
-        Value in microseconds.
+        Value in microseconds. (0.008 - 8338) Default value: 0.5 ms.
 
     """
 
@@ -1228,3 +1372,43 @@ def get_ext_trigger_debouncer_us() -> float:
         raise RPPError("rp_GenGetExtTriggerDebouncerUs", _to_debug(), __status_code)
 
     return __value
+
+
+def set_load_mode(channel: constants.Channel, mode: constants.GenLoadMode) -> None:
+    """Sets the load mode for the generator output. Only works with Redpitaya
+    250-12 otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    mode
+        Load mode.
+
+    """
+
+    __status_code = rp.rp_GenSetLoadMode(channel.value, mode)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_GenSetLoadMode", _to_debug(channel.value, mode), __status_code
+        )
+
+    return
+
+
+def get_load_mode(channel: constants.Channel) -> constants.GenLoadMode:
+    """Gets the load mode for the generator. Only works with Redpitaya 250-12
+    otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    mode
+        Return mode.
+
+    """
+
+    __status_code, __mode = rp.rp_GenGetLoadMode(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GenGetLoadMode", _to_debug(channel.value), __status_code)
+
+    return __mode

@@ -216,7 +216,7 @@ class Doc:
 
 PATH = pathlib.Path(__file__).parent
 SOURCE_PATH = PATH / "sources"
-CONVERTED_PATH = PATH / "converted"
+CONVERTED_PATH = PATH.parent / "src" / "redpipy" / "rpwrap"
 
 shutil.copy(PATH / "constants.py", CONVERTED_PATH / "constants.py")
 shutil.copy(PATH / "error.py", CONVERTED_PATH / "error.py")

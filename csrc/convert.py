@@ -387,8 +387,10 @@ def parse_doc(doc: str | None) -> Doc:
             parameters[name.strip()] = doc.strip()
         elif base == "@return":
             ret = rest.strip()
+        elif base == "@note":
+            continue
         else:
-            raise Exception("Why here!")
+            raise Exception("Why here!", base)
 
     if ret is None:
         ret = ""

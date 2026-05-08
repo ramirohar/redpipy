@@ -285,6 +285,10 @@ def to_python_type(s: str) -> str:
         return "constants." + ENUMS[s]
     elif s.startswith("rp_"):
         return "constants." + stringcase.pascalcase(s[3:].strip("_t"))  # type: ignore
+    elif s == "std": 
+        # @NOTE: The only "std" instance in headers is a list of memoryviews, 
+        # might not be like that in the future.
+        return "list[memoryview]"
     raise ValueError(s)
 
 

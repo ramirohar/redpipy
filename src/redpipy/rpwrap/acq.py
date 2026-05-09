@@ -15,15 +15,15 @@ commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
 :license: BSD, see LICENSE for more details.
 """
+from __future__ import annotations
+
+import numpy as np
+import numpy.typing as npt
+import rp
 
 from . import constants
 from .constants import StatusCode
 from .error import RPPError
-
-import numpy as np
-
-import rp
-import numpy.typing as npt
 
 
 def _to_debug(values=tuple()):

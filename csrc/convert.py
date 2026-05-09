@@ -648,3 +648,4 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         )
 
     subprocess.run(["ruff", "format", str(CONVERTED_PATH / pymodule_name)])
+    subprocess.run(["ruff", "check" ,"--select", "I","--fix", str(CONVERTED_PATH / pymodule_name)])

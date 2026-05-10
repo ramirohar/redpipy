@@ -59,7 +59,7 @@ class ReadDataAcq:
             - constants.ADC_BUFFER_SIZE // 2
         )
 
-    def get_time(self) -> npt.NDArray[np.float32]:
+    def get_time(self) -> npt.NDArray[np.float64]:
         return self.get_time_raw() / self.sampling_rate
 
     def get_ch1_raw(self) -> npt.NDArray[np.int16]:
@@ -114,7 +114,7 @@ class ReadDataAcqAxi:
             - constants.ADC_BUFFER_SIZE // 2
         )
 
-    def get_time(self) -> npt.NDArray[np.float32]:
+    def get_time(self) -> npt.NDArray[np.float64]:
         return self.get_time_raw() / self.sampling_rate
 
     def get_ch1_raw(self) -> npt.NDArray[np.int16]:
@@ -190,7 +190,7 @@ class Data:
         return self.reader.get_time_raw()
 
     @cached_property
-    def time(self) -> npt.NDArray[np.float32]:
+    def time(self) -> npt.NDArray[np.float64]:
         self.check()
         return self.reader.get_time()
 
@@ -505,7 +505,7 @@ class RPAnalog(RPBoard):
         else:  # enabled == (True, True):
             mem_start1, mem_start2 = mem_start, mem_start + mem_size // 2
 
-        acq_axi.set_decimation_factor(self._decimation)
+        acq_axi.set_decimation_factor(self._decimation.value)
 
         if self.channel1.enabled:
             acq_axi.set_trigger_delay(constants.Channel.CH_1, self._trigger_delay)

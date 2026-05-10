@@ -319,7 +319,7 @@ class AxiOscilloscope(RPBoard):
             The full RP buffer size is returned, by default False.
         """
         best_decimation = calculate_best_decimation_axi(trace_duration_hint)
-        acq_axi.set_decimation_factor(best_decimation)
+        acq_axi.set_decimation_factor(best_decimation.value)
 
         sampling_rate = acq.get_sampling_rate_hz()
         if full_buffer:
@@ -353,7 +353,7 @@ class AxiOscilloscope(RPBoard):
         acq_axi.set_decimation_factor(
             common.DECIMATION_MAP[
                 get_args(common.DECIMATION_VALUES)[decimation_exponent]
-            ]
+            ].value
         )
         sampling_rate = acq.get_sampling_rate_hz()
         self._amount_datapoints = constants.DMA_BUFFER_SIZE
@@ -368,6 +368,8 @@ class AxiOscilloscope(RPBoard):
         if delay_samples is None:
             timebase_settings = self.get_timebase_settings()
             delay_samples = timebase_settings[f"trigger_delay_{channel}_samples"]
+            if delay_samples is None:
+                raise ValueError(f"No delay samples found for {channel}")
         if channel == "ch1":
             voltage = self.channel1.get_trace(
                 delay_samples=delay_samples, size=self._amount_datapoints, out=out

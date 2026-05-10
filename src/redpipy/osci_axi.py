@@ -22,7 +22,7 @@ import pandas as pd
 
 from . import common
 from .analog import MAXIMUM_SAMPLING_RATE
-from .rpwrap import RPBoard, acq_axi, constants, acq
+from .rpwrap import RPBoard, acq, acq_axi, constants
 
 
 def calculate_best_decimation_axi(trace_duration: float) -> constants.Decimation:

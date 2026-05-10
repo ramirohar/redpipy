@@ -1690,7 +1690,7 @@ def get_data_pos_raw_np(
     channel: constants.Channel,
     start_pos: int,
     end_pos: int,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from start to end position.
@@ -1780,7 +1780,7 @@ def get_data_pos_vnp(
     channel: constants.Channel,
     start_pos: int,
     end_pos: int,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from start to end position.
@@ -1863,7 +1863,7 @@ def get_data_raw(
 def get_data_raw_np(
     channel: constants.Channel,
     pos: int,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from specified position and
@@ -1941,7 +1941,7 @@ def get_data_raw_with_calib(
 def get_data_raw_with_calib_np(
     channel: constants.Channel,
     pos: int,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in calibrated raw units from specified position
@@ -2018,7 +2018,7 @@ def get_oldest_data_raw(
 
 def get_oldest_data_raw_np(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from the oldest sample to the
@@ -2097,7 +2097,7 @@ def get_latest_data_raw(
 
 def get_latest_data_raw_np(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the latest ADC buffer samples in raw units. Output buffer must
@@ -2171,7 +2171,7 @@ def get_datav(
 def get_data_vnp(
     channel: constants.Channel,
     pos: int,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from specified position and
@@ -2246,7 +2246,7 @@ def get_oldest_datav(
 
 def get_oldest_data_vnp(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from the oldest sample to the
@@ -2323,7 +2323,7 @@ def get_latest_datav(
 
 def get_latest_data_vnp(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the latest ADC buffer samples in Volt units. Output buffer

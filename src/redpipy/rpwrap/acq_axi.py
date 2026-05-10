@@ -275,7 +275,7 @@ def enable(channel: constants.Channel, enable: bool) -> None:
 
 
 def get_data_raw(
-    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel, pos: int, size: int = constants.DMA_BUFFER_SIZE
 ) -> npt.NDArray[np.int16]:
     """Returns the AXI ADC buffer in raw units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -349,7 +349,7 @@ def get_data_raw_direct(
 def get_data_raw_np(
     channel: constants.Channel,
     pos: int,
-    size: int,
+    size: int = constants.DMA_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.int16] | None = None,
 ) -> npt.NDArray[np.int16]:
     """Returns the AXI ADC buffer in raw units from specified position and
@@ -390,7 +390,7 @@ def get_data_raw_np(
 
 
 def get_datav(
-    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel, pos: int, size: int = constants.DMA_BUFFER_SIZE
 ) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -431,7 +431,7 @@ def get_datav(
 def get_data_vnp(
     channel: constants.Channel,
     pos: int,
-    size: int,
+    size: int = constants.DMA_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and

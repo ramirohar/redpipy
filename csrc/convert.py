@@ -556,7 +556,10 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                 pre_call = [
                     build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
                 ]
-                szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
+                else:
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
                 def_parameters.append(szpar.as_def_parameter())
                 call_arguments.append(szpar.pyname)
                 call_arguments.append(bufpar.pyname)
@@ -580,7 +583,10 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                 pre_call = [
                     build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
                 ]
-                szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
+                else:
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
                 def_parameters.append(szpar.as_def_parameter())
                 call_arguments.append(bufpar.pyname)
                 call_arguments.append(szpar.pyname)
@@ -629,6 +635,10 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                         bufpar.pyname, bufpar.numpy_type, szpar.pyname
                     )
                 ]
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
+                else:
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
                 call_arguments.append(bufpar.name)
                 def_return_vars.append(bufpar.name)
 

@@ -563,7 +563,7 @@ def arb_waveform(
 
 def arb_waveform_np(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Sets user defined waveform.
@@ -634,7 +634,7 @@ def get_arb_waveform(
 
 def get_arb_waveform_np(
     channel: constants.Channel,
-    size: int,
+    size: int = constants.ADC_BUFFER_SIZE,
     np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> tuple[npt.NDArray[np.float32], int]:
     """Gets user defined waveform.

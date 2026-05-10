@@ -37,7 +37,7 @@ def calculate_best_decimation_axi(trace_duration: float) -> constants.Decimation
 
     for decimation in get_args(common.DECIMATION_VALUES):
         sampling_rate = MAXIMUM_SAMPLING_RATE / decimation
-        current_trace_duration = constants.DMA_SIZE_SAMPLES / sampling_rate
+        current_trace_duration = constants.DMA_BUFFER_SIZE / sampling_rate
         if current_trace_duration >= trace_duration:
             return getattr(constants.Decimation, "DEC_{:d}".format(decimation))
 
@@ -58,7 +58,7 @@ def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float)
         RP's sampling rate.
     """
     amount_datapoints = math.ceil(min_trace_duration * sampling_rate)
-    assert 0 < amount_datapoints <= constants.DMA_SIZE_SAMPLES
+    assert 0 < amount_datapoints <= constants.DMA_BUFFER_SIZE
     return amount_datapoints
 
 
@@ -83,7 +83,7 @@ class AxiChannel:
     def get_trace(
         self,
         delay_samples: int,
-        size: int = constants.DMA_SIZE_SAMPLES,
+        size: int = constants.DMA_BUFFER_SIZE,
         out: npt.NDArray | None = None,
     ) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
@@ -94,7 +94,7 @@ class AxiChannel:
         return acq_axi.get_datav_np(self.channel, data_pointer, size=size, out=out)
 
     def get_trace_raw(
-        self, delay_samples: int, size: int = constants.DMA_SIZE_SAMPLES
+        self, delay_samples: int, size: int = constants.DMA_BUFFER_SIZE
     ) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
         pointer = acq_axi.get_write_pointer_at_trig(self.channel) + delay_samples
@@ -213,7 +213,7 @@ class AxiOscilloscope(RPBoard):
         )
 
     def get_timevector_raw(
-        self, size: int = constants.DMA_SIZE_SAMPLES
+        self, size: int = constants.DMA_BUFFER_SIZE
     ) -> npt.NDArray[np.int64]:
         """Get timevector (in samples)."""
         return (
@@ -223,7 +223,7 @@ class AxiOscilloscope(RPBoard):
         )
 
     def get_timevector(
-        self, size: int = constants.DMA_SIZE_SAMPLES
+        self, size: int = constants.DMA_BUFFER_SIZE
     ) -> npt.NDArray[np.float64]:
         """Get timevector (in seconds)."""
         # TODO: update docs to take into account new parameter
@@ -354,7 +354,7 @@ class AxiOscilloscope(RPBoard):
             ]
         )
         sampling_rate = acq.get_sampling_rate_hz()
-        self._amount_datapoints = constants.DMA_SIZE_SAMPLES
+        self._amount_datapoints = constants.DMA_BUFFER_SIZE
         return self._amount_datapoints / sampling_rate
 
     def get_voltage_numpy(

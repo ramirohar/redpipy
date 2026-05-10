@@ -11,6 +11,7 @@ Common functions and classes.
 
 from __future__ import annotations
 
+import enum
 from typing import Generic, Literal, TypeAlias, TypeVar
 
 from .rpwrap import constants
@@ -116,3 +117,8 @@ STATE_MAP = TwoWayDict[bool, constants.PinState](
         False: constants.PinState.LOW,
     }
 )
+class ChannelConfig(enum.Enum):
+    CH1_ONLY = enum.auto()
+    CH2_ONLY = enum.auto()
+    BOTH_CH = enum.auto()
+    NO_CHANNELS = enum.auto()

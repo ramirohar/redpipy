@@ -123,7 +123,7 @@ class AxiOscilloscope(RPBoard):
     """Oscilloscope"""
 
     def __init__(
-        self, channel_config: constants.ChannelConfig = constants.ChannelConfig.CH1_ONLY
+        self, channel_config: common.ChannelConfig = common.ChannelConfig.CH1_ONLY
     ) -> None:
         super().__init__()
         self._memory_start, self._memory_size = acq_axi.get_memory_region()
@@ -137,22 +137,22 @@ class AxiOscilloscope(RPBoard):
         self.set_trigger_delay(self.channel2, 1)
         self._wait_after_trigger = 0
 
-    def configure_memory(self, channel_config: constants.ChannelConfig | None = None):
+    def configure_memory(self, channel_config: common.ChannelConfig | None = None):
         if channel_config is None:
             channel_config = self.get_channel_config()
 
         assert (self._memory_size % 16) == 0
         size_samples = self._memory_size // 4
         # The data is saved in 32-bit chunks (4 Bytes per sample)
-        if channel_config == constants.ChannelConfig.CH1_ONLY:
+        if channel_config == common.ChannelConfig.CH1_ONLY:
             acq_axi.set_buffer_samples(
                 constants.Channel.CH_1, self._memory_start, size_samples
             )
-        elif channel_config == constants.ChannelConfig.CH2_ONLY:
+        elif channel_config == common.ChannelConfig.CH2_ONLY:
             acq_axi.set_buffer_samples(
                 constants.Channel.CH_2, self._memory_start, size_samples
             )
-        elif channel_config == constants.ChannelConfig.BOTH_CH:
+        elif channel_config == common.ChannelConfig.BOTH_CH:
             acq_axi.set_buffer_samples(
                 constants.Channel.CH_1, self._memory_start, size_samples // 2
             )
@@ -162,15 +162,15 @@ class AxiOscilloscope(RPBoard):
                 size_samples // 2,
             )
 
-    def get_channel_config(self) -> constants.ChannelConfig:
+    def get_channel_config(self) -> common.ChannelConfig:
         if self.channel1.enabled and self.channel2.enabled:
-            channel_config = constants.ChannelConfig.BOTH_CH
+            channel_config = common.ChannelConfig.BOTH_CH
         elif self.channel1.enabled and not self.channel2.enabled:
-            channel_config = constants.ChannelConfig.CH1_ONLY
+            channel_config = common.ChannelConfig.CH1_ONLY
         elif not self.channel1.enabled and self.channel2.enabled:
-            channel_config = constants.ChannelConfig.CH2_ONLY
+            channel_config = common.ChannelConfig.CH2_ONLY
         else:
-            channel_config = constants.ChannelConfig.NO_CHANNELS
+            channel_config = common.ChannelConfig.NO_CHANNELS
         return channel_config
 
     def get_metadata(self) -> Generator[tuple[Any, Any], Any, None]:
@@ -325,7 +325,7 @@ class AxiOscilloscope(RPBoard):
         if full_buffer:
             self._amount_datapoints = (
                 self._memory_size // 2
-                if self._channel_config == constants.ChannelConfig.BOTH_CH
+                if self._channel_config == common.ChannelConfig.BOTH_CH
                 else self._memory_size
             )
         else:

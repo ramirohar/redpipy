@@ -84,7 +84,7 @@ class Channel:
         self, size: int = constants.ADC_BUFFER_SIZE, out: npt.NDArray | None = None
     ) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
-        return acq.get_oldest_datav_np(self.channel, size=size, out=out)
+        return acq.get_oldest_data_vnp(self.channel, size=size, np_buffer=out)
 
     def get_trace_raw(
         self, size: int = constants.ADC_BUFFER_SIZE

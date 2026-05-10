@@ -91,7 +91,9 @@ class AxiChannel:
         # when I want less than that
         pointer_at_trig = acq_axi.get_write_pointer_at_trig(self.channel)
         data_pointer = pointer_at_trig + delay_samples
-        return acq_axi.get_datav_np(self.channel, data_pointer, size=size, out=out)
+        return acq_axi.get_data_vnp(
+            self.channel, data_pointer, size=size, np_buffer=out
+        )
 
     def get_trace_raw(
         self, delay_samples: int, size: int = constants.DMA_BUFFER_SIZE

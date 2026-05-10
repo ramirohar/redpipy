@@ -102,6 +102,16 @@ class AxiChannel:
         pointer = acq_axi.get_write_pointer_at_trig(self.channel) + delay_samples
         return acq_axi.get_data_raw(self.channel, pointer, size=size)
 
+    def get_trace_direct(
+        self, delay_samples: int, size: int = constants.DMA_BUFFER_SIZE
+    ) -> list[npt.NDArray[np.int16]]:
+        """Get a list of views of DMA buffer"""
+        pointer = acq_axi.get_write_pointer_at_trig(self.channel) + delay_samples
+        views: list[memoryview] = acq_axi.get_data_raw_direct(
+            self.channel, pointer, size=size
+        )
+        return [np.frombuffer(view, dtype=np.int16) for view in views]
+
     def set_gain(self, gain: Literal[1, 5]):
         if gain == 1:
             acq.set_gain(self.channel, constants.PinState.LOW)

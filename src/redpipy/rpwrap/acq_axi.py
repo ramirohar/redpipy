@@ -232,7 +232,7 @@ def get_write_pointer_at_trig(channel: constants.Channel) -> int:
     return __pos
 
 
-def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
+def get_memory_region() -> tuple[int, int]:
     """Get reserved memory for DMA mode
 
     C Parameters
@@ -244,12 +244,10 @@ def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
 
     """
 
-    __status_code, ___start, ___size = rp.rp_AcqAxiGetMemoryRegion(_start, _size)
+    __status_code, ___start, ___size = rp.rp_AcqAxiGetMemoryRegion()
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqAxiGetMemoryRegion", _to_debug(_start, _size), __status_code
-        )
+        raise RPPError("rp_AcqAxiGetMemoryRegion", _to_debug(), __status_code)
 
     return ___start, ___size
 
@@ -348,7 +346,12 @@ def get_data_raw_direct(
     return __data
 
 
-def get_data_raw_np(channel: constants.Channel, pos: int, size: int) -> int:
+def get_data_raw_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the AXI ADC buffer in raw units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
@@ -371,14 +374,19 @@ def get_data_raw_np(channel: constants.Channel, pos: int, size: int) -> int:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqAxiGetDataRawNP(channel.value, pos, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqAxiGetDataRawNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetDataRawNP", _to_debug(channel.value, pos, size), __status_code
+            "rp_AcqAxiGetDataRawNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_datav(
@@ -420,7 +428,12 @@ def get_datav(
     return __arr_buffer
 
 
-def get_data_vnp(channel: constants.Channel, pos: int, size: int) -> float:
+def get_data_vnp(
+    channel: constants.Channel,
+    pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
@@ -443,14 +456,19 @@ def get_data_vnp(channel: constants.Channel, pos: int, size: int) -> float:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqAxiGetDataVNP(channel.value, pos, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetDataVNP", _to_debug(channel.value, pos, size), __status_code
+            "rp_AcqAxiGetDataVNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -> None:

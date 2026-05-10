@@ -529,7 +529,9 @@ def get_sweep_dir(channel: constants.Channel) -> constants.GenSweepDirection:
     return constants.GenSweepDirection(__mode)
 
 
-def arb_waveform(channel: constants.Channel, size: int) -> float:
+def arb_waveform(
+    channel: constants.Channel, size: int = constants.ADC_BUFFER_SIZE
+) -> npt.NDArray[np.float32]:
     """Sets user defined waveform.
 
     Parameters
@@ -543,17 +545,27 @@ def arb_waveform(channel: constants.Channel, size: int) -> float:
 
     """
 
-    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, size)
+    waveform = rp.fBuffer(size)
+
+    __status_code, __waveform, __size = rp.rp_GenArbWaveform(
+        channel.value, waveform, size
+    )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveform", _to_debug(channel.value, size), __status_code
+            "rp_GenArbWaveform", _to_debug(channel.value, waveform, size), __status_code
         )
 
-    return __waveform
+    __arr_waveform = np.fromiter(waveform, dtype=np.float32, count=__size)
+
+    return __arr_waveform
 
 
-def arb_waveform_np(channel: constants.Channel, size: int) -> float:
+def arb_waveform_np(
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Sets user defined waveform.
 
     Parameters
@@ -571,19 +583,22 @@ def arb_waveform_np(channel: constants.Channel, size: int) -> float:
 
     """
 
-    __status_code, __np_buffer = rp.rp_GenArbWaveformNP(channel.value, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_GenArbWaveformNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveformNP", _to_debug(channel.value, size), __status_code
+            "rp_GenArbWaveformNP", _to_debug(channel.value, np_buffer), __status_code
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_arb_waveform(
-    channel: constants.Channel, waveform: float, size: int, size_out: int
-) -> tuple[float, int]:
+    channel: constants.Channel, size: int = constants.ADC_BUFFER_SIZE
+) -> tuple[npt.NDArray[np.float32], int]:
     """Gets user defined waveform.
 
     Parameters
@@ -599,23 +614,29 @@ def get_arb_waveform(
 
     """
 
-    __status_code, __waveform, __size_out = rp.rp_GenGetArbWaveform(
-        channel.value, waveform, size, size_out
+    waveform = rp.fBuffer(size)
+
+    __status_code, __waveform, __size, __size_out = rp.rp_GenGetArbWaveform(
+        channel.value, waveform, size
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_GenGetArbWaveform",
-            _to_debug(channel.value, waveform, size, size_out),
+            _to_debug(channel.value, waveform, size),
             __status_code,
         )
 
-    return __waveform, __size_out
+    __arr_waveform = np.fromiter(waveform, dtype=np.float32, count=__size)
+
+    return __arr_waveform, __size_out
 
 
 def get_arb_waveform_np(
-    channel: constants.Channel, np_buffer: float, size: int, size_out: int
-) -> tuple[float, int]:
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> tuple[npt.NDArray[np.float32], int]:
     """Gets user defined waveform.
 
     Parameters
@@ -635,18 +656,17 @@ def get_arb_waveform_np(
 
     """
 
-    __status_code, __np_buffer, __size_out = rp.rp_GenGetArbWaveformNP(
-        channel.value, np_buffer, size, size_out
-    )
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code, __size_out = rp.rp_GenGetArbWaveformNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenGetArbWaveformNP",
-            _to_debug(channel.value, np_buffer, size, size_out),
-            __status_code,
+            "rp_GenGetArbWaveformNP", _to_debug(channel.value, np_buffer), __status_code
         )
 
-    return __np_buffer, __size_out
+    return np_buffer, __size_out
 
 
 def duty_cycle(channel: constants.Channel, ratio: float) -> None:

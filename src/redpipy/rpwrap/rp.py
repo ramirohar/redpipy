@@ -647,9 +647,7 @@ def apin_reset() -> None:
     return
 
 
-def apin_get_value(
-    pin: constants.AnalogPin, value: float, raw: int
-) -> tuple[float, int]:
+def apin_get_value(pin: constants.AnalogPin) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -663,12 +661,10 @@ def apin_get_value(
 
     """
 
-    __status_code, __value, __raw = rp.rp_ApinGetValue(pin.value, value, raw)
+    __status_code, __value, __raw = rp.rp_ApinGetValue(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_ApinGetValue", _to_debug(pin.value, value, raw), __status_code
-        )
+        raise RPPError("rp_ApinGetValue", _to_debug(pin.value), __status_code)
 
     return __value, __raw
 
@@ -733,9 +729,7 @@ def apin_set_value_raw(pin: constants.AnalogPin, value: int) -> None:
     return
 
 
-def apin_get_range(
-    pin: constants.AnalogPin, min_val: float, max_val: float
-) -> tuple[float, float]:
+def apin_get_range(pin: constants.AnalogPin) -> tuple[float, float]:
     """Gets range in volts on specific pin.
 
     Parameters
@@ -749,19 +743,15 @@ def apin_get_range(
 
     """
 
-    __status_code, __min_val, __max_val = rp.rp_ApinGetRange(
-        pin.value, min_val, max_val
-    )
+    __status_code, __min_val, __max_val = rp.rp_ApinGetRange(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_ApinGetRange", _to_debug(pin.value, min_val, max_val), __status_code
-        )
+        raise RPPError("rp_ApinGetRange", _to_debug(pin.value), __status_code)
 
     return __min_val, __max_val
 
 
-def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
+def ai_pin_get_value(pin: int) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -775,10 +765,10 @@ def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
 
     """
 
-    __status_code, __value, __raw = rp.rp_AIpinGetValue(pin, value, raw)
+    __status_code, __value, __raw = rp.rp_AIpinGetValue(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AIpinGetValue", _to_debug(pin, value, raw), __status_code)
+        raise RPPError("rp_AIpinGetValue", _to_debug(pin), __status_code)
 
     return __value, __raw
 
@@ -814,7 +804,7 @@ def ao_pin_reset() -> None:
     return
 
 
-def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
+def ao_pin_get_value(pin: int) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -828,10 +818,10 @@ def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
 
     """
 
-    __status_code, __value, __raw = rp.rp_AOpinGetValue(pin, value, raw)
+    __status_code, __value, __raw = rp.rp_AOpinGetValue(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AOpinGetValue", _to_debug(pin, value, raw), __status_code)
+        raise RPPError("rp_AOpinGetValue", _to_debug(pin), __status_code)
 
     return __value, __raw
 
@@ -896,7 +886,7 @@ def ao_pin_set_value_raw(pin: int, value: int) -> None:
     return
 
 
-def ao_pin_get_range(pin: int, min_val: float, max_val: float) -> tuple[float, float]:
+def ao_pin_get_range(pin: int) -> tuple[float, float]:
     """Gets range in volts on specific pin.
 
     Parameters
@@ -910,12 +900,10 @@ def ao_pin_get_range(pin: int, min_val: float, max_val: float) -> tuple[float, f
 
     """
 
-    __status_code, __min_val, __max_val = rp.rp_AOpinGetRange(pin, min_val, max_val)
+    __status_code, __min_val, __max_val = rp.rp_AOpinGetRange(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AOpinGetRange", _to_debug(pin, min_val, max_val), __status_code
-        )
+        raise RPPError("rp_AOpinGetRange", _to_debug(pin), __status_code)
 
     return __min_val, __max_val
 

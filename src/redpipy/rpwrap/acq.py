@@ -6,6 +6,8 @@ Pythonic wrapper for the rp package.
 
 Skipped functions
 -----------------
+- rp_AcqGetData
+- rp_AcqGetDataWithCorrection
 - rp_createBuffer
 - rp_deleteBuffer
 
@@ -1685,8 +1687,12 @@ def get_data_pos_raw(
 
 
 def get_data_pos_raw_np(
-    channel: constants.Channel, start_pos: int, end_pos: int, size: int
-) -> int:
+    channel: constants.Channel,
+    start_pos: int,
+    end_pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from start to end position.
 
     Parameters
@@ -1710,18 +1716,21 @@ def get_data_pos_raw_np(
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetDataPosRawNP(
-        channel.value, start_pos, end_pos, size
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataPosRawNP(
+        channel.value, start_pos, end_pos, np_buffer
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqGetDataPosRawNP",
-            _to_debug(channel.value, start_pos, end_pos, size),
+            _to_debug(channel.value, start_pos, end_pos, np_buffer),
             __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_data_posv(
@@ -1768,8 +1777,12 @@ def get_data_posv(
 
 
 def get_data_pos_vnp(
-    channel: constants.Channel, start_pos: int, end_pos: int, size: int
-) -> float:
+    channel: constants.Channel,
+    start_pos: int,
+    end_pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from start to end position.
 
     Parameters
@@ -1793,18 +1806,19 @@ def get_data_pos_vnp(
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetDataPosVNP(
-        channel.value, start_pos, end_pos, size
-    )
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetDataPosVNP(channel.value, start_pos, end_pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqGetDataPosVNP",
-            _to_debug(channel.value, start_pos, end_pos, size),
+            _to_debug(channel.value, start_pos, end_pos, np_buffer),
             __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_data_raw(
@@ -1846,7 +1860,12 @@ def get_data_raw(
     return __arr_buffer
 
 
-def get_data_raw_np(channel: constants.Channel, pos: int, size: int) -> int:
+def get_data_raw_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
@@ -1865,14 +1884,19 @@ def get_data_raw_np(channel: constants.Channel, pos: int, size: int) -> int:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetDataRawNP(channel.value, pos, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataRawNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetDataRawNP", _to_debug(channel.value, pos, size), __status_code
+            "rp_AcqGetDataRawNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_data_raw_with_calib(
@@ -1914,7 +1938,12 @@ def get_data_raw_with_calib(
     return __arr_buffer
 
 
-def get_data_raw_with_calib_np(channel: constants.Channel, pos: int, size: int) -> int:
+def get_data_raw_with_calib_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in calibrated raw units from specified position
     and desired size. Output buffer must be at least 'size' long.
 
@@ -1933,18 +1962,19 @@ def get_data_raw_with_calib_np(channel: constants.Channel, pos: int, size: int) 
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetDataRawWithCalibNP(
-        channel.value, pos, size
-    )
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataRawWithCalibNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqGetDataRawWithCalibNP",
-            _to_debug(channel.value, pos, size),
+            _to_debug(channel.value, pos, np_buffer),
             __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_oldest_data_raw(
@@ -1986,7 +2016,11 @@ def get_oldest_data_raw(
     return __arr_buffer
 
 
-def get_oldest_data_raw_np(channel: constants.Channel, size: int) -> int:
+def get_oldest_data_raw_np(
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the ADC buffer in raw units from the oldest sample to the
     newest one. Output buffer must be at least 'size' long. CAUTION: Use
     this method only when write pointer has stopped (Trigger happened and
@@ -2009,14 +2043,19 @@ def get_oldest_data_raw_np(channel: constants.Channel, size: int) -> int:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetOldestDataRawNP(channel.value, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetOldestDataRawNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetOldestDataRawNP", _to_debug(channel.value, size), __status_code
+            "rp_AcqGetOldestDataRawNP",
+            _to_debug(channel.value, np_buffer),
+            __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_latest_data_raw(
@@ -2056,7 +2095,11 @@ def get_latest_data_raw(
     return __arr_buffer
 
 
-def get_latest_data_raw_np(channel: constants.Channel, size: int) -> int:
+def get_latest_data_raw_np(
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
     """Returns the latest ADC buffer samples in raw units. Output buffer must
     be at least 'size' long.
 
@@ -2073,14 +2116,19 @@ def get_latest_data_raw_np(channel: constants.Channel, size: int) -> int:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetLatestDataRawNP(channel.value, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetLatestDataRawNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetLatestDataRawNP", _to_debug(channel.value, size), __status_code
+            "rp_AcqGetLatestDataRawNP",
+            _to_debug(channel.value, np_buffer),
+            __status_code,
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_datav(
@@ -2120,7 +2168,12 @@ def get_datav(
     return __arr_buffer
 
 
-def get_data_vnp(channel: constants.Channel, pos: int, size: int) -> float:
+def get_data_vnp(
+    channel: constants.Channel,
+    pos: int,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
@@ -2139,68 +2192,17 @@ def get_data_vnp(channel: constants.Channel, pos: int, size: int) -> float:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetDataVNP(channel.value, pos, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetDataVNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetDataVNP", _to_debug(channel.value, pos, size), __status_code
+            "rp_AcqGetDataVNP", _to_debug(channel.value, pos, np_buffer), __status_code
         )
 
-    return __np_buffer
-
-
-def get_data(pos: int) -> np.ndarray:
-    """Returns the ADC buffers from specified position.
-
-    Parameters
-    ----------
-    pos
-        Starting position of the ADC buffer to retrieve
-    out
-        The buffer will be filled according to the settings.
-
-    """
-
-    __status_code, __out = rp.rp_AcqGetData(pos)
-
-    if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqGetData", _to_debug(pos), __status_code)
-
-    return __out
-
-
-def get_data_with_correction(
-    pos: int, size: int, offset: int, out: np.ndarray
-) -> tuple[int, np.ndarray]:
-    """Returns the ADC buffers from specified position and desired size.
-    Output buffer must be at least 'size' long.
-
-    Parameters
-    ----------
-    pos
-        Starting position of the ADC buffer to retrieve
-    size
-        Length of the ADC buffer to retrieve. Returns length of filled
-        buffer. In case of too small buffer, required size is returned.
-    offset
-        Correcting data offset in the output buffer
-    out
-        The buffer will be filled according to the settings.
-
-    """
-
-    __status_code, __size, __out = rp.rp_AcqGetDataWithCorrection(
-        pos, size, offset, out
-    )
-
-    if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqGetDataWithCorrection",
-            _to_debug(pos, size, offset, out),
-            __status_code,
-        )
-
-    return __size, __out
+    return np_buffer
 
 
 def get_oldest_datav(
@@ -2242,7 +2244,11 @@ def get_oldest_datav(
     return __arr_buffer
 
 
-def get_oldest_data_vnp(channel: constants.Channel, size: int) -> float:
+def get_oldest_data_vnp(
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from the oldest sample to the
     newest one. Output buffer must be at least 'size' long. CAUTION: Use
     this method only when write pointer has stopped (Trigger happened and
@@ -2265,14 +2271,17 @@ def get_oldest_data_vnp(channel: constants.Channel, size: int) -> float:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetOldestDataVNP(channel.value, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetOldestDataVNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetOldestDataVNP", _to_debug(channel.value, size), __status_code
+            "rp_AcqGetOldestDataVNP", _to_debug(channel.value, np_buffer), __status_code
         )
 
-    return __np_buffer
+    return np_buffer
 
 
 def get_latest_datav(
@@ -2312,7 +2321,11 @@ def get_latest_datav(
     return __arr_buffer
 
 
-def get_latest_data_vnp(channel: constants.Channel, size: int) -> float:
+def get_latest_data_vnp(
+    channel: constants.Channel,
+    size: int,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
     """Returns the latest ADC buffer samples in Volt units. Output buffer
     must be at least 'size' long.
 
@@ -2329,17 +2342,20 @@ def get_latest_data_vnp(channel: constants.Channel, size: int) -> float:
 
     """
 
-    __status_code, __np_buffer = rp.rp_AcqGetLatestDataVNP(channel.value, size)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetLatestDataVNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetLatestDataVNP", _to_debug(channel.value, size), __status_code
+            "rp_AcqGetLatestDataVNP", _to_debug(channel.value, np_buffer), __status_code
         )
 
-    return __np_buffer
+    return np_buffer
 
 
-def get_buf_size() -> int:
+def get_buf_size(size: int) -> int:
     """Returns the ADC buffer size in samples.
 
     Parameters
@@ -2349,10 +2365,10 @@ def get_buf_size() -> int:
 
     """
 
-    __status_code, __size = rp.rp_AcqGetBufSize()
+    __status_code, __size = rp.rp_AcqGetBufSize(size)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqGetBufSize", _to_debug(), __status_code)
+        raise RPPError("rp_AcqGetBufSize", _to_debug(size), __status_code)
 
     return __size
 
@@ -2414,9 +2430,7 @@ def update_acq_filter(channel: constants.Channel) -> None:
     return
 
 
-def get_filter_calib_value(
-    channel: constants.Channel, coef_aa: int, coef_bb: int, coef_kk: int, coef_pp: int
-) -> tuple[int, int, int, int]:
+def get_filter_calib_value(channel: constants.Channel) -> tuple[int, int, int, int]:
     """Sets the current calibration values from temporary memory to the FPGA
     filter
 
@@ -2436,14 +2450,12 @@ def get_filter_calib_value(
     """
 
     __status_code, __coef_aa, __coef_bb, __coef_kk, __coef_pp = (
-        rp.rp_AcqGetFilterCalibValue(channel.value, coef_aa, coef_bb, coef_kk, coef_pp)
+        rp.rp_AcqGetFilterCalibValue(channel.value)
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetFilterCalibValue",
-            _to_debug(channel.value, coef_aa, coef_bb, coef_kk, coef_pp),
-            __status_code,
+            "rp_AcqGetFilterCalibValue", _to_debug(channel.value), __status_code
         )
 
     return __coef_aa, __coef_bb, __coef_kk, __coef_pp

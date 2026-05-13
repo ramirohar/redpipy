@@ -145,7 +145,6 @@ class AxiOscilloscope(RPBoard):
         self.set_timebase(1)
         self.set_trigger_delay(self.channel1, 1)
         self.set_trigger_delay(self.channel2, 1)
-        self._wait_after_trigger = 0
 
     def configure_memory(self, channel_config: common.ChannelConfig | None = None):
         if channel_config is None:

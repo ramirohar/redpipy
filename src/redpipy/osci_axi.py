@@ -151,8 +151,9 @@ class AxiOscilloscope(RPBoard):
             channel_config = self.get_channel_config()
 
         assert (self._memory_size % 16) == 0
-        size_samples = self._memory_size // 4
-        # The data is saved in 32-bit chunks (4 Bytes per sample)
+        size_samples = self._memory_size // 2
+        assert size_samples == constants.DMA_BUFFER_SIZE
+
         if channel_config == common.ChannelConfig.CH1_ONLY:
             acq_axi.set_buffer_samples(
                 constants.Channel.CH_1, self._memory_start, size_samples

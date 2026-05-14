@@ -341,7 +341,7 @@ def build_numpy_buffer_string(
     varname: str, numpy_type: str, buffer_size: str | int
 ) -> str:
     return f"""
-    if not {varname}:
+    if {varname} is None:
         {varname} =  np.empty({buffer_size}, dtype={numpy_type})
     """
 

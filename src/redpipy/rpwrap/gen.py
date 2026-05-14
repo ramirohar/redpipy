@@ -583,7 +583,7 @@ def arb_waveform_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_GenArbWaveformNP(channel.value, np_buffer)
@@ -656,7 +656,7 @@ def get_arb_waveform_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code, __size_out = rp.rp_GenGetArbWaveformNP(channel.value, np_buffer)

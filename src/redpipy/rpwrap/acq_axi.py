@@ -374,7 +374,7 @@ def get_data_raw_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqAxiGetDataRawNP(channel.value, pos, np_buffer)
@@ -456,7 +456,7 @@ def get_data_vnp(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, np_buffer)

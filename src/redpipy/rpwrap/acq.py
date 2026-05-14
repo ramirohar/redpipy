@@ -1716,7 +1716,7 @@ def get_data_pos_raw_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqGetDataPosRawNP(
@@ -1806,7 +1806,7 @@ def get_data_pos_vnp(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_AcqGetDataPosVNP(channel.value, start_pos, end_pos, np_buffer)
@@ -1884,7 +1884,7 @@ def get_data_raw_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqGetDataRawNP(channel.value, pos, np_buffer)
@@ -1962,7 +1962,7 @@ def get_data_raw_with_calib_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqGetDataRawWithCalibNP(channel.value, pos, np_buffer)
@@ -2043,7 +2043,7 @@ def get_oldest_data_raw_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqGetOldestDataRawNP(channel.value, np_buffer)
@@ -2116,7 +2116,7 @@ def get_latest_data_raw_np(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.int16)
 
     __status_code = rp.rp_AcqGetLatestDataRawNP(channel.value, np_buffer)
@@ -2192,7 +2192,7 @@ def get_data_vnp(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_AcqGetDataVNP(channel.value, pos, np_buffer)
@@ -2271,7 +2271,7 @@ def get_oldest_data_vnp(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_AcqGetOldestDataVNP(channel.value, np_buffer)
@@ -2342,7 +2342,7 @@ def get_latest_data_vnp(
 
     """
 
-    if not np_buffer:
+    if np_buffer is None:
         np_buffer = np.empty(size, dtype=np.float32)
 
     __status_code = rp.rp_AcqGetLatestDataVNP(channel.value, np_buffer)

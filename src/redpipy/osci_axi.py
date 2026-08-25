@@ -99,7 +99,7 @@ class AxiChannel:
         self, delay_samples: int, size: int = constants.DMA_BUFFER_SIZE
     ) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
-        pointer = acq_axi.get_write_pointer_at_trig(self.channel) 
+        pointer = acq_axi.get_write_pointer_at_trig(self.channel)
         return acq_axi.get_data_raw(self.channel, pointer, size=size)
 
     def get_trace_direct(
@@ -108,7 +108,7 @@ class AxiChannel:
         """Get a direct view of DMA buffer
         Since the buffer is a ring-buffer, might return two slices
         """
-        pointer = acq_axi.get_write_pointer_at_trig(self.channel) 
+        pointer = acq_axi.get_write_pointer_at_trig(self.channel)
         views: list[memoryview] = acq_axi.get_data_raw_direct(
             self.channel, pointer, size=size
         )

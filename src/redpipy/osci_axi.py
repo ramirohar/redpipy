@@ -400,8 +400,8 @@ class AxiOscilloscope(RPBoard):
         self,
         channel: AxiChannel,
         delay: float,
-        units: Literal["second", "trace"] = "trace",
-    ):
+        units: Literal["second", "samples"] = "samples",
+    ) -> int:
         """Set the trigger delay.
 
         The trigger delay is the amount of traces or seconds that are acquired
@@ -430,13 +430,22 @@ class AxiOscilloscope(RPBoard):
         units, optional
             Units in which the delay is specified, either "trace" or "second" by default trace.
         """
+        rate = acq.get_sampling_rate_hz()
 
         if units == "second":
-            delay_samples = math.ceil(delay * acq.get_sampling_rate_hz())
-        elif units == "trace":
-            delay_samples = delay * self._amount_datapoints
+            delay_samples = math.ceil(delay / rate)
+        elif units == "samples":
+            delay_samples = int(delay)
 
-        acq_axi.set_trigger_delay(channel.channel, int(delay_samples))
+        if delay_samples > constants.DMA_BUFFER_SIZE:
+            raise ValueError(
+                """
+                Requested more samples than the buffer size, consider setting it to maximum buffer size. 
+                Shifting-buffer behavior yet to be implemented
+                """
+            )
+
+        acq_axi.set_trigger_delay(channel.channel, delay_samples)
         return delay_samples
 
     def wait_until_done(self, channel: AxiChannel):

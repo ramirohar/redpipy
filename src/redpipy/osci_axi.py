@@ -433,7 +433,7 @@ class AxiOscilloscope(RPBoard):
         rate = acq.get_sampling_rate_hz()
 
         if units == "second":
-            delay_samples = math.ceil(delay / rate)
+            delay_samples = math.ceil(delay * rate)
         elif units == "samples":
             delay_samples = int(delay)
 
